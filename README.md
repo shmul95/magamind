@@ -14,18 +14,26 @@ The big idea is simple: you mostly change one file, [home.nix](./home.nix), and 
 
 ## Super Short Version
 
-1. Clone this repo.
+1. Get this repo on your computer.
 2. Open [home.nix](./home.nix).
 3. Read the big section titles and change what you want.
 4. Run:
 
 ```bash
-home-manager switch --flake github:me/magamind
+home-manager switch --flake .
 ```
 
-If you are testing locally before you push:
+If you fork this repo to your own GitHub account and want to install from GitHub directly, use:
 
 ```bash
+home-manager switch --flake github:shmul95/magamind
+```
+
+If you want to start by cloning it locally:
+
+```bash
+git clone git@github.com:shmul95/magamind.git
+cd magamind
 home-manager switch --flake .
 ```
 
@@ -46,6 +54,8 @@ If it guesses wrong, edit the values near the top of [home.nix](./home.nix):
 
 - `username`
 - `homeDirectory`
+
+If it guesses right, you do not need to touch this part.
 
 ### `TURN ZSHMUL ON`
 
@@ -97,7 +107,13 @@ home-manager switch --flake .
 If the repo is on GitHub and you want to use it from anywhere:
 
 ```bash
-home-manager switch --flake github:me/magamind
+home-manager switch --flake github:shmul95/magamind
+```
+
+If you are still editing locally, stay with:
+
+```bash
+home-manager switch --flake .
 ```
 
 ## If Something Breaks
@@ -108,6 +124,12 @@ Try these in order:
 2. Read the error message slowly. Nix errors are noisy, but they usually point to the bad option.
 3. Undo the last small change you made in [home.nix](./home.nix).
 4. Switch again.
+
+If you are using the GitHub form, you can also test without switching:
+
+```bash
+home-manager build --flake github:shmul95/magamind
+```
 
 If you already switched to something bad, you can roll back:
 
