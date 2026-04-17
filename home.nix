@@ -54,6 +54,7 @@
       EDITOR = "nvim";
       VIRTUAL_ENV_DISABLE_PROMPT = "1";
       HYPHEN_INSENSITIVE = "true";
+      SHELL = "${pkgs.zsh}/bin/zsh";
     };
 
     prompt = {
@@ -70,7 +71,14 @@
     ];
 
     extraInitContent = ''
-      # Put extra shell startup commands here.
+      # Load nvm in zsh sessions (manual ~/.nvm install).
+      export NVM_DIR="$HOME/.nvm"
+      if [ -s "$NVM_DIR/nvm.sh" ]; then
+        . "$NVM_DIR/nvm.sh"
+      fi
+      if [ -s "$NVM_DIR/bash_completion" ]; then
+        . "$NVM_DIR/bash_completion"
+      fi
     '';
   };
 

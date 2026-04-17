@@ -37,6 +37,27 @@ cd magamind
 home-manager switch --impure --flake .
 ```
 
+## Non-NixOS: make zsh your default login shell
+
+On non-NixOS systems, Home Manager configures `zsh`, but it does not change your system login shell by itself.
+
+After `home-manager switch`, run:
+
+```bash
+ZSH_PATH="$(command -v zsh)"
+grep -qxF "$ZSH_PATH" /etc/shells || echo "$ZSH_PATH" | sudo tee -a /etc/shells
+chsh -s "$ZSH_PATH"
+```
+
+Then log out and log back in.
+
+To verify:
+
+```bash
+echo "$SHELL"
+getent passwd "$USER" | cut -d: -f7
+```
+
 ## The First Things To Check
 
 Open [home.nix](./home.nix) and look for these section titles:
