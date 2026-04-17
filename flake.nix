@@ -28,11 +28,16 @@
       username =
         let detected = builtins.getEnv "USER";
         in if detected != "" then detected else "your-username";
+      homeDirectory =
+        let detected = builtins.getEnv "HOME";
+        in if detected != "" then detected else "/home/${username}";
       hostname = builtins.getEnv "HOSTNAME";
       pkgs = import nixpkgs { inherit system; };
       homeConfig = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
-        extraSpecialArgs = { inherit inputs; };
+        extraSpecialArgs = {
+          inherit homeDirectory inputs username;
+        };
         modules = [ ./home.nix ];
       };
       configNames =

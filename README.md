@@ -20,13 +20,13 @@ The big idea is simple: you mostly change one file, [home.nix](./home.nix), and 
 4. Run:
 
 ```bash
-home-manager switch --flake .
+home-manager switch --impure --flake .
 ```
 
 If you fork this repo to your own GitHub account and want to install from GitHub directly, use:
 
 ```bash
-home-manager switch --flake github:shmul95/magamind
+home-manager switch --impure --flake github:shmul95/magamind
 ```
 
 If you want to start by cloning it locally:
@@ -34,7 +34,7 @@ If you want to start by cloning it locally:
 ```bash
 git clone git@github.com:shmul95/magamind.git
 cd magamind
-home-manager switch --flake .
+home-manager switch --impure --flake .
 ```
 
 ## The First Things To Check
@@ -48,7 +48,7 @@ Open [home.nix](./home.nix) and look for these section titles:
 
 ### `WHO AM I?`
 
-`magamind` tries to guess your username and home folder by looking at your shell environment.
+`magamind` takes your username and home folder from your shell environment when you run Home Manager with `--impure`.
 
 If it guesses wrong, edit the values near the top of [home.nix](./home.nix):
 
@@ -101,26 +101,26 @@ programs.tshmux.status.position = "bottom";
 Every time you change [home.nix](./home.nix), run:
 
 ```bash
-home-manager switch --flake .
+home-manager switch --impure --flake .
 ```
 
 If the repo is on GitHub and you want to use it from anywhere:
 
 ```bash
-home-manager switch --flake github:shmul95/magamind
+home-manager switch --impure --flake github:shmul95/magamind
 ```
 
 If you are still editing locally, stay with:
 
 ```bash
-home-manager switch --flake .
+home-manager switch --impure --flake .
 ```
 
 ## If Something Breaks
 
 Try these in order:
 
-1. Run `home-manager build --flake .` to check without switching.
+1. Run `home-manager build --impure --flake .` to check without switching.
 2. Read the error message slowly. Nix errors are noisy, but they usually point to the bad option.
 3. Undo the last small change you made in [home.nix](./home.nix).
 4. Switch again.
@@ -128,7 +128,7 @@ Try these in order:
 If you are using the GitHub form, you can also test without switching:
 
 ```bash
-home-manager build --flake github:shmul95/magamind
+home-manager build --impure --flake github:shmul95/magamind
 ```
 
 If you already switched to something bad, you can roll back:

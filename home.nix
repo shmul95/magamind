@@ -1,15 +1,11 @@
-{ inputs, pkgs, ... }:
-
-let
-  detectedUsername = builtins.getEnv "USER";
-  detectedHome = builtins.getEnv "HOME";
-
-  username =
-    if detectedUsername != "" then detectedUsername else "your-username";
-
-  homeDirectory =
-    if detectedHome != "" then detectedHome else "/home/${username}";
-in {
+{
+  homeDirectory,
+  inputs,
+  pkgs,
+  username,
+  ...
+}:
+{
   imports = [
     inputs.zshmul.homeManagerModules.default
     inputs.tshmux.homeManagerModules.default
@@ -24,8 +20,8 @@ in {
 
   # ======================================================================
   # WHO AM I?
-  # If magamind guessed the wrong username or home folder, replace the
-  # values in the `username` and `homeDirectory` variables above.
+  # `magamind` gets your username and home folder from the shell
+  # environment when you run `home-manager ... --impure`.
   # ======================================================================
 
   # ======================================================================
