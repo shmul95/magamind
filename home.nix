@@ -31,7 +31,7 @@
   # ======================================================================
   programs.zshmul = {
     enable = true;
-    installPackage = false;
+    installPackage = true;
     autoStartTshmux = true;
 
     aliases = {
