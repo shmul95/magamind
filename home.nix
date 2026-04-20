@@ -1,6 +1,7 @@
 {
   homeDirectory,
   inputs,
+  lib,
   pkgs,
   username,
   ...
@@ -9,7 +10,10 @@
   imports = [
     inputs.zshmul.homeManagerModules.default
     inputs.tshmux.homeManagerModules.default
-  ];
+  ]
+  ++ lib.optionals (inputs ? shmulvim)    [ inputs.shmulvim.homeManagerModules.default ]
+  ++ lib.optionals (inputs ? shmulcode)   [ inputs.shmulcode.homeManagerModules.default ]
+  ++ lib.optionals (inputs ? shmulistan)  [ inputs.shmulistan.homeManagerModules.default ];
 
   home = {
     inherit username homeDirectory;
@@ -123,6 +127,15 @@
     git
     neovim
   ];
+
+  # ======================================================================
+  # OPTIONAL MODULES
+  # Uncomment the matching input in flake.nix to activate these.
+  # ======================================================================
+
+  # programs.shmulvim   = lib.mkIf (inputs ? shmulvim)   { enable = true; };
+  # programs.shmulcode  = lib.mkIf (inputs ? shmulcode)  { enable = true; };
+  # programs.shmulistan = lib.mkIf (inputs ? shmulistan) { enable = true; };
 
   # ======================================================================
   # EXTRA ADVANCED STUFF

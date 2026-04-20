@@ -18,6 +18,22 @@
       url = "github:shmul95/tshmux";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Optional — uncomment to enable
+    # shmulvim = {
+    #   url = "github:shmul95/shmulvim";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
+
+    # shmulcode = {
+    #   url = "github:shmul95/shmulcode";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
+
+    # shmulistan = {
+    #   url = "github:shmul95/shmulistan";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
   };
 
   outputs = { home-manager, nixpkgs, ... }@inputs:
