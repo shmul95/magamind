@@ -34,6 +34,12 @@
       url = "git+ssh://git@github.com/shmul95/shmulistan";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Optional — uncomment to enable
+    # shmulex = {
+    #   url = "git+ssh://git@github.com/shmul95/shmulex";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
   };
 
   outputs = { self, home-manager, nixpkgs, ... }@inputs:

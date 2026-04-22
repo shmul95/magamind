@@ -23,7 +23,8 @@ in
   ]
   ++ lib.optionals (inputs ? shmulvim)    [ inputs.shmulvim.homeManagerModules.default ]
   ++ lib.optionals (inputs ? shmulcode)   [ inputs.shmulcode.homeManagerModules.default ]
-  ++ lib.optionals (inputs ? shmulistan)  [ inputs.shmulistan.homeManagerModules.default ];
+  ++ lib.optionals (inputs ? shmulistan)  [ inputs.shmulistan.homeManagerModules.default ]
+  ++ lib.optionals (inputs ? shmulex)     [ inputs.shmulex.homeManagerModules.default ];
 
   home = {
     inherit username homeDirectory;
@@ -172,6 +173,21 @@ in
 
   programs.shmulistan = lib.mkIf (inputs ? shmulistan) {
     enable = true;
+  };
+
+  # ======================================================================
+  # SHMULEX (optional) — uncomment input in flake.nix to activate
+  # ======================================================================
+  shmulex = lib.mkIf (inputs ? shmulex) {
+    enable = true;
+    source = inputs.shmulcode;
+
+    roles.enable = true;
+    codexAgents.enable = false;
+
+    claudeMcp.enable = false;
+    claudeCommands.enable = false;
+    claudeRoutingPolicy.enable = false;
   };
 
   # ======================================================================
