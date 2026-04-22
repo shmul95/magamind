@@ -21,10 +21,10 @@ in
     inputs.zshmul.homeManagerModules.default
     inputs.tshmux.homeManagerModules.default
   ]
-  ++ lib.optionals (inputs ? shmulvim)    [ inputs.shmulvim.homeManagerModules.default ]
+  # ++ lib.optionals (inputs ? shmulvim)    [ inputs.shmulvim.homeManagerModules.default ]
   ++ lib.optionals (inputs ? shmulcode)   [ inputs.shmulcode.homeManagerModules.default ]
-  ++ lib.optionals (inputs ? shmulistan)  [ inputs.shmulistan.homeManagerModules.default ]
-  ++ lib.optionals (inputs ? shmulex)     [ inputs.shmulex.homeManagerModules.default ];
+  ++ lib.optionals (inputs ? shmulistan)  [ inputs.shmulistan.homeManagerModules.default ];
+  # ++ lib.optionals (inputs ? shmulex)     [ inputs.shmulex.homeManagerModules.default ];
 
   home = {
     username = lib.mkDefault username;
@@ -34,13 +34,18 @@ in
 
   programs.home-manager.enable = true;
 
+  nixpkgs.config.allowUnfree = true;
+
   # ======================================================================
   # GIT — identity configured from your active profile (see profiles.nix)
   # ======================================================================
   programs.git = {
     enable = true;
-    userName = activeProfile.git.userName;
-    userEmail = activeProfile.git.userEmail;
+    settings = {
+      # name = activeProfile.git.settings.user.name;
+      # email = activeProfile.git.settings.user.email;
+      inherit (activeProfile.git.settings) user;
+    };
   };
 
   # ======================================================================
@@ -162,8 +167,8 @@ in
   # OPTIONAL MODULES
   # Uncomment the matching input in flake.nix to activate these.
   # ======================================================================
-
   # programs.shmulvim   = lib.mkIf (inputs ? shmulvim)   { enable = true; };
+
   programs.claude = lib.mkIf (inputs ? shmulcode) {
     enable = true;
 
@@ -185,20 +190,17 @@ in
     enable = true;
   };
 
-  # ======================================================================
-  # SHMULEX (optional) — uncomment input in flake.nix to activate
-  # ======================================================================
-  shmulex = lib.mkIf (inputs ? shmulex) {
-    enable = true;
-    source = inputs.shmulcode;
-
-    roles.enable = true;
-    codexAgents.enable = false;
-
-    claudeMcp.enable = false;
-    claudeCommands.enable = false;
-    claudeRoutingPolicy.enable = false;
-  };
+  # shmulex = lib.mkIf (inputs ? shmulex) {
+  #   enable = true;
+  #   source = inputs.shmulcode;
+  #
+  #   roles.enable = true;
+  #   codexAgents.enable = false;
+  #
+  #   claudeMcp.enable = false;
+  #   claudeCommands.enable = false;
+  #   claudeRoutingPolicy.enable = false;
+  # };
 
   # ======================================================================
   # DESKTOP — kitty terminal, only active when context = "desktop"
