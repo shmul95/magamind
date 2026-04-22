@@ -167,6 +167,15 @@
   };
 
   # ======================================================================
+  # DIRENV — auto-load nix dev shells when you cd into a project
+  # Pairs with nix-direnv for fast, cached shell activation.
+  # ======================================================================
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
+
+  # ======================================================================
   # EXTRA ADVANCED STUFF
   # Keep this section for future tweaks that do not belong to zsh or tmux.
   # ======================================================================
