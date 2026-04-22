@@ -13,13 +13,15 @@ The big idea is simple: you mostly change one file, [home.nix](./home.nix), and 
 
 - [flake.nix](./flake.nix): tells Nix which pieces to download
 - [home.nix](./home.nix): the main file you edit
+- [profiles.example.nix](./profiles.example.nix): copy to `profiles.nix` and commit to your fork
 
 ## Super Short Version
 
-1. Get this repo on your computer.
-2. Open [home.nix](./home.nix).
-3. Read the big section titles and change what you want.
-4. Run:
+1. **Fork this repo** (private fork recommended — your `profiles.nix` will live here).
+2. Clone your fork locally.
+3. Copy `profiles.example.nix` to `profiles.nix`, fill in your git identity and context, then commit it.
+4. Open [home.nix](./home.nix) and tweak what you want.
+5. Run:
 
 ```bash
 home-manager switch --impure --flake .
@@ -71,6 +73,31 @@ To verify:
 echo "$SHELL"
 getent passwd "$USER" | cut -d: -f7
 ```
+
+## Profiles — identity per context
+
+`cabanashmul` loads your git identity and desktop context from a `profiles.nix` file in the repo root. This file is yours to commit to your private fork — it never goes into the upstream.
+
+**Setup:**
+
+```bash
+cp profiles.example.nix profiles.nix
+# Edit profiles.nix with your real name, email, and context
+git add profiles.nix && git commit -m "feat: add personal profiles"
+```
+
+**Switching profiles at build time:**
+
+```bash
+CABANASHMUL_PROFILE=work home-manager switch --impure --flake .
+CABANASHMUL_PROFILE=personal home-manager switch --impure --flake .
+```
+
+If no env var is set, `defaultProfile` from `profiles.nix` is used.
+
+**Desktop vs server:**
+
+Set `context = "desktop"` in `profiles.nix` to get GUI packages (`discord`, `firefox`, `kitty`). Set `context = "server"` or `context = "wsl"` to skip them.
 
 ## The First Things To Check
 
@@ -236,6 +263,20 @@ programs.claude = lib.mkIf (inputs ? shmulcode) {
   };
 };
 ```
+
+## Using cabanashmul from a NixOS flake
+
+`cabanashmul` exposes a `homeManagerModules.default` output so NixOS configs can consume it directly:
+
+```nix
+# In your NixOS flake.nix inputs:
+cabanashmul.url = "github:shmul95/cabanashmul";
+
+# In your home-manager config:
+imports = [ inputs.cabanashmul.homeManagerModules.default ];
+```
+
+The consuming flake must pass `activeProfile`, `context`, `username`, and `homeDirectory` via `extraSpecialArgs`. It can override `home.username`, `home.homeDirectory`, and `home.stateVersion` since they are set with `lib.mkDefault`.
 
 ## How To Rebuild
 
