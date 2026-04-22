@@ -106,5 +106,37 @@
       # The consuming flake must pass activeProfile, context, username,
       # and homeDirectory via extraSpecialArgs.
       homeManagerModules.default = import ./home.nix;
+
+      # Helper for thin consumer repos (e.g. my-cabanashmul).
+      # Usage:
+      #   homeConfigurations.default = cabanashmul.lib.mkHomeConfig {
+      #     profiles = import ./profiles.nix;
+      #   };
+      lib.mkHomeConfig = {
+        profiles,
+        extraModules ? [],
+        extraSpecialArgs ? {},
+      }:
+        let
+          profEnv = builtins.getEnv "CABANASHMUL_PROFILE";
+          activeProfileName =
+            if profEnv != "" then profEnv
+            else profiles.defaultProfile;
+          callerProfile =
+            if profiles.profiles ? ${activeProfileName}
+            then profiles.profiles.${activeProfileName}
+            else builtins.throw
+              "cabanashmul: profile '${activeProfileName}' not found. Available: ${builtins.concatStringsSep ", " (builtins.attrNames profiles.profiles)}";
+          callerContext = profiles.context or "server";
+        in
+          home-manager.lib.homeManagerConfiguration {
+            inherit pkgs;
+            extraSpecialArgs = {
+              inherit inputs username homeDirectory;
+              activeProfile = callerProfile;
+              context = callerContext;
+            } // extraSpecialArgs;
+            modules = [ ./home.nix ] ++ extraModules;
+          };
     };
 }
