@@ -1,4 +1,6 @@
 {
+  activeProfile,
+  context,
   homeDirectory,
   inputs,
   lib,
@@ -21,6 +23,15 @@
   };
 
   programs.home-manager.enable = true;
+
+  # ======================================================================
+  # GIT — identity configured from your active profile (see profiles.nix)
+  # ======================================================================
+  programs.git = {
+    enable = true;
+    userName = activeProfile.git.userName;
+    userEmail = activeProfile.git.userEmail;
+  };
 
   # ======================================================================
   # WHO AM I?
@@ -124,7 +135,6 @@
   # If you want more apps available everywhere, put them here.
   # ======================================================================
   home.packages = with pkgs; [
-    git
     neovim
   ];
 

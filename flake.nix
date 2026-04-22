@@ -48,11 +48,39 @@
         let detected = builtins.getEnv "HOME";
         in if detected != "" then detected else "/home/${username}";
       hostname = builtins.getEnv "HOSTNAME";
+
+      # ── Profile loading ──────────────────────────────────────────────
+      # profiles.nix is tracked in your private fork.
+      # Copy profiles.example.nix → profiles.nix, edit, and commit.
+      profilesCfg =
+        if builtins.pathExists ./profiles.nix
+        then import ./profiles.nix
+        else {
+          context = "server";
+          defaultProfile = "default";
+          profiles.default = {
+            git = {
+              userName = "Git User";
+              userEmail = "user@example.com";
+            };
+          };
+        };
+      profileEnv = builtins.getEnv "CABANASHMUL_PROFILE";
+      activeProfileName =
+        if profileEnv != "" then profileEnv
+        else profilesCfg.defaultProfile;
+      activeProfile =
+        if profilesCfg.profiles ? ${activeProfileName}
+        then profilesCfg.profiles.${activeProfileName}
+        else builtins.throw
+          "cabanashmul: profile '${activeProfileName}' not found. Available: ${builtins.concatStringsSep ", " (builtins.attrNames profilesCfg.profiles)}";
+      context = profilesCfg.context or "server";
+
       pkgs = import nixpkgs { inherit system; };
       homeConfig = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
         extraSpecialArgs = {
-          inherit homeDirectory inputs username;
+          inherit homeDirectory inputs username activeProfile context;
         };
         modules = [ ./home.nix ];
       };
