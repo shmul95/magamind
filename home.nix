@@ -44,6 +44,15 @@ in
   };
 
   # ======================================================================
+  # SSH — per-profile match blocks (identity files, hosts, options)
+  # Add an `ssh.matchBlocks` attrset to your profile to activate this.
+  # ======================================================================
+  programs.ssh = lib.mkIf (activeProfile ? ssh) {
+    enable = true;
+    matchBlocks = activeProfile.ssh.matchBlocks or {};
+  };
+
+  # ======================================================================
   # WHO AM I?
   # `cabanashmul` gets your username and home folder from the shell
   # environment when you run `home-manager ... --impure`.
