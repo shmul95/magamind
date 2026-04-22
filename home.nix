@@ -8,6 +8,14 @@
   username,
   ...
 }:
+let
+  isDesktop = context == "desktop";
+  desktopPkgs = with pkgs; [
+    discord
+    firefox
+    kitty
+  ];
+in
 {
   imports = [
     inputs.zshmul.homeManagerModules.default
@@ -137,7 +145,7 @@
   # ======================================================================
   home.packages = with pkgs; [
     neovim
-  ];
+  ] ++ lib.optionals isDesktop desktopPkgs;
 
   # ======================================================================
   # OPTIONAL MODULES
@@ -164,6 +172,17 @@
 
   programs.shmulistan = lib.mkIf (inputs ? shmulistan) {
     enable = true;
+  };
+
+  # ======================================================================
+  # DESKTOP — kitty terminal, only active when context = "desktop"
+  # ======================================================================
+  programs.kitty = lib.mkIf isDesktop {
+    enable = true;
+    settings = {
+      font_family = "JetBrainsMono Nerd Font";
+      disable_ligatures = "never";
+    };
   };
 
   # ======================================================================
