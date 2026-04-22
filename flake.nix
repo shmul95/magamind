@@ -101,5 +101,10 @@
         };
     in {
       homeConfigurations = builtins.listToAttrs configNames;
+
+      # Reusable module for consuming flakes (e.g. shmulOS).
+      # The consuming flake must pass activeProfile, context, username,
+      # and homeDirectory via extraSpecialArgs.
+      homeManagerModules.default = import ./home.nix;
     };
 }

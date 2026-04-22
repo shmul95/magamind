@@ -27,8 +27,9 @@ in
   ++ lib.optionals (inputs ? shmulex)     [ inputs.shmulex.homeManagerModules.default ];
 
   home = {
-    inherit username homeDirectory;
-    stateVersion = "25.05";
+    username = lib.mkDefault username;
+    homeDirectory = lib.mkDefault homeDirectory;
+    stateVersion = lib.mkDefault "25.05";
   };
 
   programs.home-manager.enable = true;
