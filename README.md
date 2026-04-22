@@ -1,6 +1,6 @@
-# magamind
+# cabanashmul
 
-`magamind` is a tiny Home Manager starter that sets up two things by default:
+`cabanashmul` is a tiny Home Manager starter that sets up two things by default:
 
 - `zshmul` for your shell
 - `tshmux` for your tmux
@@ -28,13 +28,13 @@ home-manager switch --impure --flake .
 If you want to install this config directly from a private GitHub repo over SSH, use:
 
 ```bash
-home-manager switch --impure --flake 'git+ssh://git@github.com/shmul95/magamind.git#default'
+home-manager switch --impure --flake 'git+ssh://git@github.com/shmul95/cabanashmul.git#default'
 ```
 
 There is also a shorter flake-app form:
 
 ```bash
-nix run 'git+ssh://git@github.com/shmul95/magamind.git'
+nix run 'git+ssh://git@github.com/shmul95/cabanashmul.git'
 ```
 
 That app exports `NIXPKGS_ALLOW_UNFREE=1` and runs:
@@ -46,8 +46,8 @@ home-manager switch --impure --flake '<this flake>#default'
 If you want to start by cloning it locally:
 
 ```bash
-git clone git@github.com:shmul95/magamind.git
-cd magamind
+git clone git@github.com:shmul95/cabanashmul.git
+cd cabanashmul
 home-manager switch --impure --flake .
 ```
 
@@ -84,7 +84,7 @@ Open [home.nix](./home.nix) and look for these section titles:
 
 ### `WHO AM I?`
 
-`magamind` takes your username and home folder from your shell environment when you run Home Manager with `--impure`.
+`cabanashmul` takes your username and home folder from your shell environment when you run Home Manager with `--impure`.
 
 If it guesses wrong, edit the values near the top of [home.nix](./home.nix):
 
@@ -134,7 +134,7 @@ programs.tshmux.status.position = "bottom";
 
 ## Optional Modules
 
-`magamind` can also wire in optional modules from other repos.
+`cabanashmul` can also wire in optional modules from other repos.
 
 ### What `shmulcode` pulls by default here
 
@@ -248,7 +248,7 @@ home-manager switch --impure --flake .
 If the repo is on GitHub and you want to use it from anywhere:
 
 ```bash
-home-manager switch --impure --flake 'git+ssh://git@github.com/shmul95/magamind.git#default'
+home-manager switch --impure --flake 'git+ssh://git@github.com/shmul95/cabanashmul.git#default'
 ```
 
 If you are still editing locally, stay with:
@@ -269,7 +269,7 @@ Try these in order:
 If you are using the GitHub form, you can also test without switching:
 
 ```bash
-home-manager build --impure --flake github:shmul95/magamind
+home-manager build --impure --flake github:shmul95/cabanashmul
 ```
 
 If you already switched to something bad, you can roll back:

@@ -1,5 +1,5 @@
 {
-  description = "magamind - a tiny Home Manager starter for zshmul and tshmux";
+  description = "cabanashmul - a tiny Home Manager starter for zshmul and tshmux";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";

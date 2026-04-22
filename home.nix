@@ -24,7 +24,7 @@
 
   # ======================================================================
   # WHO AM I?
-  # `magamind` gets your username and home folder from the shell
+  # `cabanashmul` gets your username and home folder from the shell
   # environment when you run `home-manager ... --impure`.
   # ======================================================================
 
