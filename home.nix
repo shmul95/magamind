@@ -134,8 +134,26 @@
   # ======================================================================
 
   # programs.shmulvim   = lib.mkIf (inputs ? shmulvim)   { enable = true; };
-  # programs.shmulcode  = lib.mkIf (inputs ? shmulcode)  { enable = true; };
-  # programs.shmulistan = lib.mkIf (inputs ? shmulistan) { enable = true; };
+  programs.claude = lib.mkIf (inputs ? shmulcode) {
+    enable = true;
+
+    # `shmulcode` is atomic: each category can be toggled independently.
+    agents.enable = true;
+    skills.enable = true;
+    commands.enable = true;
+
+    # Vault integration is separate from the `shmulistan` Home Manager module.
+    vault = {
+      enable = true;
+      repoUrl = "git+ssh://git@github.com/shmul95/shmulistan";
+    };
+
+    qrouter.enable = false;
+  };
+
+  programs.shmulistan = lib.mkIf (inputs ? shmulistan) {
+    enable = true;
+  };
 
   # ======================================================================
   # EXTRA ADVANCED STUFF

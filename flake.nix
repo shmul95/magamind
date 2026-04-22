@@ -25,18 +25,18 @@
     #   inputs.nixpkgs.follows = "nixpkgs";
     # };
 
-    # shmulcode = {
-    #   url = "github:shmul95/shmulcode";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
+    shmulcode = {
+      url = "git+ssh://git@github.com/shmul95/shmulcode";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
-    # shmulistan = {
-    #   url = "github:shmul95/shmulistan";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
+    shmulistan = {
+      url = "git+ssh://git@github.com/shmul95/shmulistan";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { home-manager, nixpkgs, ... }@inputs:
+  outputs = { self, home-manager, nixpkgs, ... }@inputs:
     let
       lib = nixpkgs.lib;
       system =

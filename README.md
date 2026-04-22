@@ -1,9 +1,11 @@
 # magamind
 
-`magamind` is a tiny Home Manager starter that sets up two things:
+`magamind` is a tiny Home Manager starter that sets up two things by default:
 
 - `zshmul` for your shell
 - `tshmux` for your tmux
+
+It can also enable optional modules like `shmulcode`, `shmulistan`, and `shmulvim`.
 
 The big idea is simple: you mostly change one file, [home.nix](./home.nix), and then Home Manager builds the rest.
 
@@ -23,10 +25,22 @@ The big idea is simple: you mostly change one file, [home.nix](./home.nix), and 
 home-manager switch --impure --flake .
 ```
 
-If you fork this repo to your own GitHub account and want to install from GitHub directly, use:
+If you want to install this config directly from a private GitHub repo over SSH, use:
 
 ```bash
-home-manager switch --impure --flake github:shmul95/magamind
+home-manager switch --impure --flake 'git+ssh://git@github.com/shmul95/magamind.git#default'
+```
+
+There is also a shorter flake-app form:
+
+```bash
+nix run 'git+ssh://git@github.com/shmul95/magamind.git'
+```
+
+That app exports `NIXPKGS_ALLOW_UNFREE=1` and runs:
+
+```bash
+home-manager switch --impure --flake '<this flake>#default'
 ```
 
 If you want to start by cloning it locally:
@@ -66,6 +80,7 @@ Open [home.nix](./home.nix) and look for these section titles:
 - `TURN ZSHMUL ON`
 - `TURN TSHMUX ON`
 - `ADD YOUR OWN PACKAGES`
+- `OPTIONAL MODULES`
 
 ### `WHO AM I?`
 
@@ -117,6 +132,111 @@ programs.zshmul.prompt.symbol = ">";
 programs.tshmux.status.position = "bottom";
 ```
 
+## Optional Modules
+
+`magamind` can also wire in optional modules from other repos.
+
+### What `shmulcode` pulls by default here
+
+If you leave the `shmulcode` block in [home.nix](./home.nix) as-is, it will:
+
+- install the `claude-code` package
+- install Claude shell integration
+- write `~/.claude/CLAUDE.md` and `~/.claude/settings.json`
+- pull all discovered agents from `shmulcode/agents/`
+- pull all discovered skills from `shmulcode/skills/`
+- pull all discovered commands from `shmulcode/commands/` if that repo has any
+- enable vault integration and clone `shmulistan` to `~/shmulistan` if it is missing
+- install `obsidian` because `programs.claude.vault.enable = true`
+
+In the current local `shmulcode` repo, that means all agents and these skills are enabled by default:
+
+- `deterministic-llm-architecture`
+- `git-worktrees`
+- `k8s-nix-deployment`
+- `n8n`
+- `nix-flake-parts`
+- `skill-creator`
+- `supabase`
+- `systematic-debugging`
+
+`qrouter` is not enabled in this starter unless you turn it on explicitly.
+
+### What `shmulistan` pulls by default here
+
+If you leave the `shmulistan` block in [home.nix](./home.nix) as-is, it will:
+
+- install the `shmulistan` package
+- install `pnpm_9`
+- create the standard vault folder structure under `~/shmulistan`
+
+That module is small. Its main knobs are just:
+
+- `programs.shmulistan.enable`
+- `programs.shmulistan.vaultPath`
+
+### Make `shmulcode` atomic
+
+The `shmulcode` module is already split into independent categories. In [home.nix](./home.nix), the block is written so you can toggle these separately:
+
+- `programs.claude.enable`
+- `programs.claude.agents.enable`
+- `programs.claude.skills.enable`
+- `programs.claude.commands.enable`
+- `programs.claude.vault.enable`
+- `programs.claude.qrouter.enable`
+
+You can also disable specific discovered items one by one:
+
+```nix
+programs.claude.skills.enabled."git-worktrees" = false;
+programs.claude.agents.enabled."finance-specialist" = false;
+```
+
+### Example: pull only skills from `shmulcode`
+
+Use this shape in [home.nix](./home.nix):
+
+```nix
+programs.claude = lib.mkIf (inputs ? shmulcode) {
+  enable = true;
+
+  agents.enable = false;
+  skills.enable = true;
+  commands.enable = false;
+
+  # Disable vault integration if you only want the Claude skills.
+  vault.enable = false;
+
+  qrouter.enable = false;
+};
+```
+
+### Example: pull only one skill
+
+```nix
+programs.claude = lib.mkIf (inputs ? shmulcode) {
+  enable = true;
+
+  agents.enable = false;
+  skills.enable = true;
+  commands.enable = false;
+  vault.enable = false;
+  qrouter.enable = false;
+
+  skills.enabled = {
+    deterministic-llm-architecture = false;
+    git-worktrees = true;
+    k8s-nix-deployment = false;
+    n8n = false;
+    nix-flake-parts = false;
+    skill-creator = false;
+    supabase = false;
+    systematic-debugging = false;
+  };
+};
+```
+
 ## How To Rebuild
 
 Every time you change [home.nix](./home.nix), run:
@@ -128,7 +248,7 @@ home-manager switch --impure --flake .
 If the repo is on GitHub and you want to use it from anywhere:
 
 ```bash
-home-manager switch --impure --flake github:shmul95/magamind
+home-manager switch --impure --flake 'git+ssh://git@github.com/shmul95/magamind.git#default'
 ```
 
 If you are still editing locally, stay with:
