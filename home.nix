@@ -63,6 +63,7 @@
       wl-clipboard
       ripgrep
       fd
+      gh
     ];
 
     sessionVariables = {
