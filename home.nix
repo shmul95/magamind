@@ -48,6 +48,7 @@ in
   # ======================================================================
   programs.ssh = lib.mkIf (activeProfile ? ssh) {
     enable = true;
+    enableDefaultConfig = false;
     matchBlocks = activeProfile.ssh.matchBlocks or {};
   };
 
