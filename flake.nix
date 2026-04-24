@@ -24,17 +24,17 @@
     #   url = "github:shmul95/shmulvim";
     #   inputs.nixpkgs.follows = "nixpkgs";
     # };
-
-    shmulcode = {
-      url = "git+ssh://git@github.com/shmul95/shmulcode";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    shmulistan = {
-      url = "git+ssh://git@github.com/shmul95/shmulistan";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
+    #
+    # shmulcode = {
+    #   url = "git+ssh://git@github.com/shmul95/shmulcode";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
+    #
+    # shmulistan = {
+    #   url = "git+ssh://git@github.com/shmul95/shmulistan";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
+    #
     # shmulex = {
     #   url = "git+ssh://git@github.com/shmul95/shmulex";
     #   inputs.nixpkgs.follows = "nixpkgs";
@@ -82,29 +82,50 @@
       context = profilesCfg.context or "server";
 
       pkgs = import nixpkgs { inherit system; };
-      homeConfig = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
-        extraSpecialArgs = {
-          inherit homeDirectory inputs username activeProfile context;
+
+      # ── Builder helper ───────────────────────────────────────────────
+      mkConfig = profile:
+        home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+          extraSpecialArgs = {
+            inherit homeDirectory inputs username context;
+            activeProfile = profile;
+          };
+          modules = [ ./home.nix ];
         };
-        modules = [ ./home.nix ];
-      };
-      configNames =
+
+      # ── Active config (backward-compat) ──────────────────────────────
+      homeConfig = mkConfig activeProfile;
+
+      # ── Per-profile configs ──────────────────────────────────────────
+      # Produces: { "shmul95-personal" = <cfg>; "shmul95-work" = <cfg>; ... }
+      perProfileConfigs =
+        lib.mapAttrs'
+          (profileName: profileData:
+            lib.nameValuePair "${username}-${profileName}" (mkConfig profileData))
+          profilesCfg.profiles;
+
+      # ── Legacy config names ──────────────────────────────────────────
+      legacyConfigNames =
         [
           { name = "default"; value = homeConfig; }
-          { name = username; value = homeConfig; }
+          { name = username;  value = homeConfig; }
         ]
         ++ lib.optional (hostname != "") {
-          name = "${username}@${hostname}";
+          name  = "${username}@${hostname}";
           value = homeConfig;
         };
     in {
-      homeConfigurations = builtins.listToAttrs configNames;
+      homeConfigurations =
+        perProfileConfigs // builtins.listToAttrs legacyConfigNames;
 
       # Reusable module for consuming flakes (e.g. shmulOS).
       # The consuming flake must pass activeProfile, context, username,
       # and homeDirectory via extraSpecialArgs.
       homeManagerModules.default = import ./home.nix;
+
+      lib.profileNamesStr =
+        builtins.concatStringsSep " " (builtins.attrNames profilesCfg.profiles);
 
       # Helper for thin consumer repos (e.g. my-cabanashmul).
       # Usage:

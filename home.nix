@@ -11,9 +11,7 @@
 let
   isDesktop = context == "desktop";
   desktopPkgs = with pkgs; [
-    discord
-    firefox
-    kitty
+    discord firefox kitty
   ];
 in
 {
@@ -21,10 +19,10 @@ in
     inputs.zshmul.homeManagerModules.default
     inputs.tshmux.homeManagerModules.default
   ]
-  # ++ lib.optionals (inputs ? shmulvim)    [ inputs.shmulvim.homeManagerModules.default ]
+  ++ lib.optionals (inputs ? shmulvim)    [ inputs.shmulvim.homeManagerModules.default ]
   ++ lib.optionals (inputs ? shmulcode)   [ inputs.shmulcode.homeManagerModules.default ]
-  ++ lib.optionals (inputs ? shmulistan)  [ inputs.shmulistan.homeManagerModules.default ];
-  # ++ lib.optionals (inputs ? shmulex)     [ inputs.shmulex.homeManagerModules.default ];
+  ++ lib.optionals (inputs ? shmulistan)  [ inputs.shmulistan.homeManagerModules.default ]
+  ++ lib.optionals (inputs ? shmulex)     [ inputs.shmulex.homeManagerModules.default ];
 
   home = {
     username = lib.mkDefault username;
@@ -41,11 +39,7 @@ in
   # ======================================================================
   programs.git = {
     enable = true;
-    settings = {
-      # name = activeProfile.git.settings.user.name;
-      # email = activeProfile.git.settings.user.email;
-      inherit (activeProfile.git.settings) user;
-    };
+    settings = activeProfile.git.settings or {};
   };
 
   # ======================================================================
@@ -160,36 +154,52 @@ in
   # If you want more apps available everywhere, put them here.
   # ======================================================================
   home.packages = with pkgs; [
-    neovim
+    # python313 for example
+
+    (pkgs.writeShellApplication {
+      name = "build-profiles";
+      runtimeInputs = [ pkgs.coreutils pkgs.nix ];
+      text = builtins.readFile ./scripts/build-profiles.sh;
+    })
+
+    (pkgs.writeShellApplication {
+      name = "switch-profile";
+      runtimeInputs = [ pkgs.coreutils ];
+      text = builtins.readFile ./scripts/switch-profile.sh;
+    })
   ] ++ lib.optionals isDesktop desktopPkgs;
 
   # ======================================================================
   # OPTIONAL MODULES
   # Uncomment the matching input in flake.nix to activate these.
   # ======================================================================
-  # programs.shmulvim   = lib.mkIf (inputs ? shmulvim)   { enable = true; };
-
-  programs.claude = lib.mkIf (inputs ? shmulcode) {
-    enable = true;
-
-    # `shmulcode` is atomic: each category can be toggled independently.
-    agents.enable = true;
-    skills.enable = true;
-    commands.enable = true;
-
-    # Vault integration is separate from the `shmulistan` Home Manager module.
-    vault = {
-      enable = true;
-      repoUrl = "git+ssh://git@github.com/shmul95/shmulistan";
-    };
-
-    qrouter.enable = false;
-  };
-
-  programs.shmulistan = lib.mkIf (inputs ? shmulistan) {
-    enable = true;
-  };
-
+  # programs.shmulvim = lib.mkIf (inputs ? shmulvim) {
+  #   enable = true;
+  #   installPackage = true;
+  #   clipboard.provider = "auto";
+  # };
+  #
+  # programs.claude = lib.mkIf (inputs ? shmulcode) {
+  #   enable = true;
+  #
+  #   # `shmulcode` is atomic: each category can be toggled independently.
+  #   agents.enable = true;
+  #   skills.enable = true;
+  #   commands.enable = true;
+  #
+  #   # Vault integration is separate from the `shmulistan` Home Manager module.
+  #   vault = {
+  #     enable = true;
+  #     repoUrl = "git+ssh://git@github.com/shmul95/shmulistan";
+  #   };
+  #
+  #   qrouter.enable = false;
+  # };
+  #
+  # programs.shmulistan = lib.mkIf (inputs ? shmulistan) {
+  #   enable = true;
+  # };
+  #
   # shmulex = lib.mkIf (inputs ? shmulex) {
   #   enable = true;
   #   source = inputs.shmulcode;
