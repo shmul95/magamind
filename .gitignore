@@ -1,3 +1,7 @@
 /result
 result-*
-/*.lock
+/private-inputs.nix
+/local.nix
+/private/
+/profiles.nix
+/profiles/*.nix
