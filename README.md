@@ -99,6 +99,49 @@ If no env var is set, `defaultProfile` from `profiles.nix` is used.
 
 Set `context = "desktop"` in `profiles.nix` to get GUI packages (`discord`, `firefox`, `kitty`). Set `context = "server"` or `context = "wsl"` to skip them.
 
+## Fast profile switching
+
+Once you've added profiles to `profiles.nix`, you can pre-build all of them and switch between them without Nix evaluation or rebuilding. This is useful if you have multiple contexts (personal, work) that you switch between often.
+
+**First time setup:**
+
+```bash
+cd /path/to/cabanashmul
+build-profiles
+```
+
+This builds all profiles defined in `profiles.nix` and stores the results at `$XDG_DATA_HOME/cabanashmul/result-<profile>` (defaults to `~/.local/share/cabanashmul/result-<profile>`).
+
+**Switching profiles:**
+
+```bash
+switch-profile personal
+switch-profile work
+```
+
+Each switch activates the pre-built result instantly, with zero Nix evaluation.
+
+**The `build-profiles` command:**
+
+- Reads all profiles from `profiles.nix`
+- Rebuilds each one (takes time)
+- Stores result symlinks at `$XDG_DATA_HOME/cabanashmul/result-<profile>`
+- Can be run from the repo directory or from anywhere if `CABANASHMUL_DIR` is set
+
+**If you change your config:**
+
+After editing [home.nix](./home.nix) or [profiles.nix](./profiles.nix), run `build-profiles` again to update the pre-built results.
+
+**The traditional workflow still works:**
+
+If you prefer the original approach, you can still use:
+
+```bash
+CABANASHMUL_PROFILE=work home-manager switch --impure --flake .
+```
+
+Both approaches coexist. Use `build-profiles` + `switch-profile` for speed when you switch often, or use the env var approach if you rebuild less frequently.
+
 ## The First Things To Check
 
 Open [home.nix](./home.nix) and look for these section titles:
