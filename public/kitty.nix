@@ -1,0 +1,11 @@
+{ ... }: {
+  flake.cabanashmul.homeModules.kitty = { lib, context, ... }: {
+    programs.kitty = lib.mkIf (context == "desktop") {
+      enable = true;
+      settings = {
+        font_family        = "JetBrainsMono Nerd Font";
+        disable_ligatures  = "never";
+      };
+    };
+  };
+}
