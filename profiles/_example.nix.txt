@@ -1,0 +1,18 @@
+# Copy this file to profiles/<name>.nix, replace <name> with your profile name.
+# This file is gitignored by default; your identity stays local.
+#
+# { config, ... }: {
+#   flake.cabanashmul.profiles.<name> = {
+#     git.settings.user = {
+#       name  = "Your Name";
+#       email = "you@example.com";
+#       # Or, if using agenix:
+#       # email = config.age.secrets.git-email-<name>.path;
+#     };
+#     ssh.matchBlocks."github.com" = {
+#       identityFile = "~/.ssh/github_<name>";
+#       # Or, if using agenix:
+#       # identityFile = config.age.secrets.github_<name>.path;
+#     };
+#   };
+# }
