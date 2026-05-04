@@ -8,8 +8,9 @@ Most Home Manager repos grow into a tangled `home.nix` that mixes machine setup,
 
 - **Dendritic layout** — every `*.nix` file in `public/`, `private/`, and `profiles/` is auto-imported via [`import-tree`](https://github.com/vic/import-tree). Adding a module is creating a file.
 - **Public / private split** — track shared defaults publicly, layer private modules and `git+ssh` flake inputs on top without forking the public base.
-- **Profiles as identity** — switch Git and SSH identity per profile (`personal`, `work`, ...) with `CABANASHMUL_PROFILE=work home-manager switch ...` or per-user flake outputs.
+- **Profiles as identity** — switch Git and SSH identity per profile (`personal`, `work`, ...) with per-user flake outputs like `home-manager switch --flake .#"$USER"-work`.
 - **One-command bootstrap** — `nix run github:shmul95/cabanashmul#setup` creates `profiles/personal.nix` and `local.nix` for you.
+- **Instant profile switches** — prebuild every profile with `build-profiles`, then jump between them with `switch-profile work` (no flake re-evaluation).
 - **Optional agenix** — secrets, private modules, and extra profiles are all opt-in. The starter works with just `profiles/personal.nix`.
 
 ## Architecture
@@ -25,21 +26,22 @@ cabanashmul/
 ├── private/       # optional, .gitignored: private modules + SSH-gated inputs
 ├── profiles/      # per-identity Git/SSH settings (personal.nix, work.nix, ...)
 ├── secrets/       # optional agenix recipient map
+├── scripts/       # setup, build-profiles, switch-profile helpers
 ├── local.nix      # machine-local defaults (context, defaultProfile)
 └── flake.nix
 ```
 
-Profile selection order: `CABANASHMUL_PROFILE` → `flake.cabanashmul.defaultProfile` → `personal` → the only profile.
+Profile selection order: explicit flake output (`.#"$USER"-<profile>`) → `flake.cabanashmul.defaultProfile` → `personal` → the only profile. (`CABANASHMUL_PROFILE` is still honored for backward compatibility but is deprecated — prefer the flake output form.)
 
 ## Quick Start
 
 ```bash
-nix run github:shmul95/cabanashmul#setup     # bootstrap profiles/personal.nix + local.nix
-nix shell home-manager#home-manager          # if home-manager isn't installed
-home-manager switch --impure --flake .
+nix run github:shmul95/cabanashmul#setup                # bootstrap profiles/personal.nix + local.nix
+nix shell home-manager#home-manager                     # if home-manager isn't installed
+home-manager switch --impure --flake .#"$USER"-personal
 ```
 
-The setup app creates `profiles/personal.nix` and `local.nix`. After that, `home-manager switch --impure --flake .` builds your default profile. Pass `CABANASHMUL_PROFILE=...` or use `.#"$USER"-<profile>` to pick a different one.
+The setup app creates `profiles/personal.nix` and `local.nix`. To switch profiles later, name the one you want — for example `home-manager switch --impure --flake .#"$USER"-work`.
 
 ## New To Nix? Start Here
 
@@ -82,23 +84,41 @@ This creates `profiles/personal.nix` and `local.nix` in the current directory. O
 **4. Apply it**
 
 ```bash
-nix shell home-manager#home-manager       # only needed the first time
-home-manager switch --impure --flake .
+nix shell home-manager#home-manager                    # only needed the first time
+home-manager switch --impure --flake .#"$USER"-personal
 ```
 
 That's it — your shell, tmux, editor, and packages are now managed by this flake.
+
+If you add another profile later (say `work`), apply it with `home-manager switch --impure --flake .#"$USER"-work`.
 
 **5. Daily loop**
 
 Edit a file, then re-run:
 
 ```bash
-home-manager switch --impure --flake .
+home-manager switch --impure --flake .#"$USER"-personal
 ```
+
+If you have multiple profiles and want near-instant switches, see [Fast Profile Switching](#fast-profile-switching) below.
 
 To roll back a bad change: `home-manager generations` then `/nix/var/nix/profiles/per-user/$USER/home-manager-<N>-link/activate`.
 
 If something looks unfamiliar, the [Home Manager manual](https://nix-community.github.io/home-manager/) and [nix.dev](https://nix.dev/) are the canonical references.
+
+## Fast Profile Switching
+
+If you keep more than one profile (say `personal` and `work`), running `home-manager switch --impure --flake .` re-evaluates the flake every time. The bundled `build-profiles` and `switch-profile` helpers avoid that round-trip by prebuilding every profile once and then activating the cached result instantly.
+
+```bash
+build-profiles                 # prebuild every profile under $XDG_DATA_HOME/cabanashmul/
+switch-profile personal        # activate the prebuilt personal profile
+switch-profile work            # activate the prebuilt work profile
+```
+
+`build-profiles` discovers the profiles from `flake.lib.profileNamesStr` and builds `homeConfigurations.<user>-<profile>.activationPackage` for each. `switch-profile <name>` then runs the saved activation script directly — no Nix evaluation, no rebuild.
+
+Re-run `build-profiles` after editing any module so the cached results stay in sync. See [`scripts/README.md`](./scripts/README.md) for details.
 
 ## How To Customize It
 
