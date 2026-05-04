@@ -1,6 +1,20 @@
+<div align="center">
+
 # cabanashmul
 
-A dendritic Home Manager starter flake. Drop a `.nix` file in a folder, and it loads.
+**A dendritic Home Manager starter flake.**
+*Drop a `.nix` file in a folder, and it loads.*
+
+[![Nix Flake](https://img.shields.io/badge/Nix-Flake-5277C3?logo=nixos&logoColor=white)](https://nixos.wiki/wiki/Flakes)
+[![Home Manager](https://img.shields.io/badge/Home%20Manager-supported-7EB26D)](https://github.com/nix-community/home-manager)
+[![Built with Nix](https://img.shields.io/badge/Built%20with-Nix-5277C3?logo=nixos&logoColor=white)](https://nixos.org)
+[![dendritic](https://img.shields.io/badge/pattern-dendritic-8957E5)](https://github.com/vic/import-tree)
+
+[Quick Start](#quick-start) · [Architecture](#architecture) · [New To Nix?](#new-to-nix-start-here) · [Fast Profile Switching](#fast-profile-switching)
+
+</div>
+
+---
 
 Most Home Manager repos grow into a tangled `home.nix` that mixes machine setup, identity, and secrets. `cabanashmul` separates those concerns into four independent layers — a public base, an optional private fork, per-identity profiles, and optional secrets — and auto-imports each one. There is no central file to edit.
 
@@ -183,3 +197,13 @@ If your repo was created with the setup app, the public template remote is named
 git fetch template
 git merge template/main
 ```
+
+---
+
+<div align="center">
+
+Built with Nix · Crafted by <a href="https://github.com/shmul95">@shmul95</a>
+
+Part of the <a href="https://github.com/shmul95/zshmul">zshmul</a> · <a href="https://github.com/shmul95/tshmux">tshmux</a> · <a href="https://github.com/shmul95/shmulvim">shmulvim</a> · <strong>cabanashmul</strong> family
+
+</div>
