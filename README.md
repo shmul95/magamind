@@ -31,7 +31,7 @@ cabanashmul/
 └── flake.nix
 ```
 
-Profile selection order: explicit flake output (`.#"$USER"-<profile>`) → `flake.cabanashmul.defaultProfile` → `personal` → the only profile. (`CABANASHMUL_PROFILE` is still honored for backward compatibility but is deprecated — prefer the flake output form.)
+The flake exposes one output per profile (`.#"$USER"-personal`, `.#"$USER"-work`, ...) plus a bare `.#"$USER"` alias that resolves to the active profile via this order: `flake.cabanashmul.defaultProfile` → `personal` → the only profile. So `.#"$USER"` and `.#"$USER"-personal` are the same target out of the box — pick whichever feels cleaner. (`CABANASHMUL_PROFILE` is still honored for backward compatibility but is deprecated — prefer the explicit `.#"$USER"-<profile>` form.)
 
 ## Quick Start
 
@@ -41,7 +41,7 @@ nix shell home-manager#home-manager                     # if home-manager isn't 
 home-manager switch --impure --flake .#"$USER"-personal
 ```
 
-The setup app creates `profiles/personal.nix` and `local.nix`. To switch profiles later, name the one you want — for example `home-manager switch --impure --flake .#"$USER"-work`.
+The setup app creates `profiles/personal.nix` and `local.nix`. By default, `.#"$USER"` is an alias for `.#"$USER"-personal`, so `home-manager switch --impure --flake .#"$USER"` works too. To switch profiles later, name the one you want — for example `home-manager switch --impure --flake .#"$USER"-work`.
 
 ## New To Nix? Start Here
 
