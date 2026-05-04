@@ -32,9 +32,12 @@
     };
 in {
   flake.homeConfigurations =
-    lib.mapAttrs' (name: profile:
+    (lib.mapAttrs' (name: profile:
       lib.nameValuePair "${username}-${name}" (mkConfig name profile)
-    ) cab.profiles;
+    ) cab.profiles)
+    // (let ap = if cab.profiles ? ${activeName} then cab.profiles.${activeName} else {}; in {
+      "${username}" = mkConfig activeName ap;
+    });
 
   flake.lib.mkHomeConfig = { extraModules ? [], extraSpecialArgs ? {} }:
     let ap = if cab.profiles ? ${activeName} then cab.profiles.${activeName} else {}; in

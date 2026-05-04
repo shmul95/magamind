@@ -13,44 +13,52 @@ The big idea is simple: you mostly change one file, [home.nix](./home.nix), and 
 
 - [flake.nix](./flake.nix): tells Nix which pieces to download
 - [home.nix](./home.nix): the main file you edit
-- [profiles.example.nix](./profiles.example.nix): copy to `profiles.nix` and commit to your fork
+- [profiles/](./profiles): your per-profile identity files, such as `profiles/personal.nix`
 
 ## Super Short Version
 
-1. **Fork this repo** (private fork recommended — your `profiles.nix` will live here).
-2. Clone your fork locally.
-3. Copy `profiles.example.nix` to `profiles.nix`, fill in your git identity and context, then commit it.
-4. Open [home.nix](./home.nix) and tweak what you want.
-5. Run:
+1. Run the setup app:
 
 ```bash
-home-manager switch --impure --flake .
+nix run github:shmul95/cabanashmul#setup
 ```
 
-If you want to install this config directly from a private GitHub repo over SSH, use:
+2. This clones the template, renames the template remote to `template`, creates `profiles/personal.nix` and `local.nix` if missing, and optionally creates a private GitHub `origin`.
+3. Edit `profiles/personal.nix`, `local.nix`, and [home.nix](./home.nix).
+4. If `home-manager` is not installed yet, open a shell with it:
 
 ```bash
-home-manager switch --impure --flake 'git+ssh://git@github.com/shmul95/cabanashmul.git#default'
+nix shell home-manager#home-manager
+```
+
+5. Rebuild:
+
+```bash
+home-manager switch --impure --flake .#"$USER"-personal
+```
+
+If you want to install this config directly from your private GitHub repo over SSH, use:
+
+```bash
+home-manager switch --impure --flake 'git+ssh://git@github.com/<you>/cabanashmul.git'
 ```
 
 There is also a shorter flake-app form:
 
 ```bash
-nix run 'git+ssh://git@github.com/shmul95/cabanashmul.git'
+nix run 'git+ssh://git@github.com/<you>/cabanashmul.git'
 ```
 
 That app exports `NIXPKGS_ALLOW_UNFREE=1` and runs:
 
 ```bash
-home-manager switch --impure --flake '<this flake>#default'
+home-manager switch --impure --flake '<this flake>'
 ```
 
-If you want to start by cloning it locally:
+You can also pass a target directory:
 
 ```bash
-git clone git@github.com:shmul95/cabanashmul.git
-cd cabanashmul
-home-manager switch --impure --flake .
+nix run github:shmul95/cabanashmul#setup -- my-dotfiles
 ```
 
 ## Non-NixOS: make zsh your default login shell
@@ -76,14 +84,17 @@ getent passwd "$USER" | cut -d: -f7
 
 ## Profiles — identity per context
 
-`cabanashmul` loads your git identity and desktop context from a `profiles.nix` file in the repo root. This file is yours to commit to your private fork — it never goes into the upstream.
+`cabanashmul` loads your git identity from files in [profiles/](./profiles), for example `profiles/personal.nix` or `profiles/work.nix`. These files are meant to live in your private repo, not in the public template.
 
 **Setup:**
 
 ```bash
-cp profiles.example.nix profiles.nix
-# Edit profiles.nix with your real name, email, and context
-git add profiles.nix && git commit -m "feat: add personal profiles"
+nix run github:shmul95/cabanashmul#setup
+# Edit profiles/personal.nix with your real name, email, and SSH key
+# Edit local.nix if you want a different context or default profile
+git add -f profiles/personal.nix local.nix home.nix
+git commit -m "add personal profile"
+home-manager switch --impure --flake .#"$USER"-personal
 ```
 
 **Switching profiles at build time:**
@@ -93,15 +104,15 @@ CABANASHMUL_PROFILE=work home-manager switch --impure --flake .
 CABANASHMUL_PROFILE=personal home-manager switch --impure --flake .
 ```
 
-If no env var is set, `defaultProfile` from `profiles.nix` is used.
+If no env var is set, `defaultProfile` from `local.nix` is used.
 
 **Desktop vs server:**
 
-Set `context = "desktop"` in `profiles.nix` to get GUI packages (`discord`, `firefox`, `kitty`). Set `context = "server"` or `context = "wsl"` to skip them.
+Set `context = "desktop"` in `local.nix` to get GUI packages (`discord`, `firefox`, `kitty`). Set `context = "server"` or `context = "wsl"` to skip them.
 
 ## Fast profile switching
 
-Once you've added profiles to `profiles.nix`, you can pre-build all of them and switch between them without Nix evaluation or rebuilding. This is useful if you have multiple contexts (personal, work) that you switch between often.
+Once you've added files under `profiles/`, you can pre-build all of them and switch between them without Nix evaluation or rebuilding. This is useful if you have multiple contexts (personal, work) that you switch between often.
 
 **First time setup:**
 
@@ -110,7 +121,7 @@ cd /path/to/cabanashmul
 build-profiles
 ```
 
-This builds all profiles defined in `profiles.nix` and stores the results at `$XDG_DATA_HOME/cabanashmul/result-<profile>` (defaults to `~/.local/share/cabanashmul/result-<profile>`).
+This builds all profiles defined under `profiles/` and stores the results at `$XDG_DATA_HOME/cabanashmul/result-<profile>` (defaults to `~/.local/share/cabanashmul/result-<profile>`).
 
 **Switching profiles:**
 
@@ -123,14 +134,14 @@ Each switch activates the pre-built result instantly, with zero Nix evaluation.
 
 **The `build-profiles` command:**
 
-- Reads all profiles from `profiles.nix`
+- Reads all profiles from `profiles/`
 - Rebuilds each one (takes time)
 - Stores result symlinks at `$XDG_DATA_HOME/cabanashmul/result-<profile>`
 - Can be run from the repo directory or from anywhere if `CABANASHMUL_DIR` is set
 
 **If you change your config:**
 
-After editing [home.nix](./home.nix) or [profiles.nix](./profiles.nix), run `build-profiles` again to update the pre-built results.
+After editing [home.nix](./home.nix), files under [profiles/](./profiles), or `local.nix`, run `build-profiles` again to update the pre-built results.
 
 **The traditional workflow still works:**
 
@@ -326,19 +337,19 @@ The consuming flake must pass `activeProfile`, `context`, `username`, and `homeD
 Every time you change [home.nix](./home.nix), run:
 
 ```bash
-home-manager switch --impure --flake .
+home-manager switch --impure --flake .#"$USER"-personal
 ```
 
 If the repo is on GitHub and you want to use it from anywhere:
 
 ```bash
-home-manager switch --impure --flake 'git+ssh://git@github.com/shmul95/cabanashmul.git#default'
+home-manager switch --impure --flake 'git+ssh://git@github.com/<you>/cabanashmul.git'
 ```
 
 If you are still editing locally, stay with:
 
 ```bash
-home-manager switch --impure --flake .
+home-manager switch --impure --flake .#"$USER"-personal
 ```
 
 ## If Something Breaks
