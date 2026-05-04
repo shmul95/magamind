@@ -2,6 +2,7 @@
 result-*
 /private-inputs.nix
 /local.nix
-/private/
+/private/*
+!/private/README.md
 /profiles.nix
 /profiles/*.nix

@@ -87,10 +87,11 @@ print_next_steps() {
 Next steps:
 1. Edit profiles/personal.nix with your git identity and SSH key.
 2. Edit local.nix if you want a different context or default profile.
-3. Commit your private changes:
-   git add -f profiles/personal.nix local.nix home.nix
+3. Add modules under public/ or private/ if you want extra Home Manager config.
+4. Commit your private changes:
+   git add -f profiles/personal.nix local.nix
    git commit -m "personalize cabanashmul"
-4. Rebuild:
+5. Rebuild:
    home-manager switch --impure --flake .
 
 Future template updates:
