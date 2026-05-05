@@ -10,7 +10,7 @@
 [![Built with Nix](https://img.shields.io/badge/Built%20with-Nix-5277C3?logo=nixos&logoColor=white)](https://nixos.org)
 [![dendritic](https://img.shields.io/badge/pattern-dendritic-8957E5)](https://github.com/vic/import-tree)
 
-[Quick Start](#quick-start) · [Architecture](#architecture) · [New To Nix?](#new-to-nix-start-here) · [Fast Profile Switching](#fast-profile-switching)
+[Get Started](#get-started) · [Architecture](#architecture) · [Fast Profile Switching](#fast-profile-switching) · [Troubleshooting](#troubleshooting)
 
 </div>
 
@@ -45,39 +45,37 @@ cabanashmul/
 └── flake.nix
 ```
 
-The flake exposes one output per profile (`.#"$USER"-personal`, `.#"$USER"-work`, ...) plus a bare `.#"$USER"` alias that resolves to the active profile via this order: `flake.cabanashmul.defaultProfile` → `personal` → the only profile. So `.#"$USER"` and `.#"$USER"-personal` are the same target out of the box — pick whichever feels cleaner. (`CABANASHMUL_PROFILE` is still honored for backward compatibility but is deprecated — prefer the explicit `.#"$USER"-<profile>` form.)
+The flake exposes one Home Manager configuration per profile (`.#"$USER"-personal`, `.#"$USER"-work`, ...) plus a default `.#"$USER"` alias that resolves via `flake.cabanashmul.defaultProfile` → `personal` → the only profile. Because Home Manager picks `homeConfigurations."$USER"` automatically when no attribute is given, **`home-manager switch --impure --flake .` is the everyday command** — it builds your default profile. Use the explicit `.#"$USER"-<profile>` form only when switching to a non-default profile. (`CABANASHMUL_PROFILE` is still honored for backward compatibility but is deprecated.)
 
-## Quick Start
+## Get Started
 
-```bash
-nix run github:shmul95/cabanashmul#setup                # bootstrap profiles/personal.nix + local.nix
-nix shell home-manager#home-manager                     # if home-manager isn't installed
-home-manager switch --impure --flake .#"$USER"-personal
-```
+This walks you from zero to a working setup in five steps. Skim if you're a Nix veteran; read every step if you're not. There's a one-block [Quick Start](#quick-start-for-nix-veterans) at the end of this section for skimmers.
 
-The setup app creates `profiles/personal.nix` and `local.nix`. By default, `.#"$USER"` is an alias for `.#"$USER"-personal`, so `home-manager switch --impure --flake .#"$USER"` works too. To switch profiles later, name the one you want — for example `home-manager switch --impure --flake .#"$USER"-work`.
+### Prerequisites
 
-## New To Nix? Start Here
+- **Nix with flakes enabled.** If you don't have Nix yet, see [Install Nix](#1-install-nix) below.
+- **git** installed (the setup app uses it).
+- A few minutes, and a willingness to **log out and back in** at the end if you want `zsh` as your login shell.
 
-If you've never used Nix or Home Manager, this section gets you from zero to a working setup. Skip it if you already have Nix with flakes enabled.
+A short orientation if you're entirely new:
 
-**1. What you're about to install**
-
-- **Nix** — a package manager that installs software in `/nix/store` without touching your system. Reproducible, removable, parallel versions.
-- **Home Manager** — a Nix tool that manages your user-level dotfiles and packages declaratively. Instead of editing `~/.zshrc` by hand, you describe what you want in a `.nix` file and rebuild.
-- **cabanashmul** — a starter template that gives Home Manager a sensible folder structure so you don't have to design one yourself.
+- **Nix** is a package manager that installs software in `/nix/store` without touching your system. Reproducible, removable, parallel versions.
+- **Home Manager** uses Nix to manage your user-level dotfiles and packages declaratively. Instead of editing `~/.zshrc` by hand, you describe what you want in a `.nix` file and rebuild.
+- **cabanashmul** is a starter template that gives Home Manager a sensible folder structure so you don't have to design one yourself.
 
 You don't need to learn the Nix language to use this. You'll mostly be copying files and editing values.
 
-**2. Install Nix**
+### 1. Install Nix
 
-The Determinate Systems installer is the easiest path. It enables flakes by default and is cleanly uninstallable:
+Skip this section if `nix --version` already prints something on your machine and your installer enabled flakes.
+
+The Determinate Systems installer is the easiest path — it enables flakes by default and uninstalls cleanly:
 
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install
 ```
 
-Then open a new terminal so `nix` is on your `PATH`.
+Open a new terminal so `nix` is on your `PATH`.
 
 If you used another installer and `nix run` complains about flakes, add this to `~/.config/nix/nix.conf`:
 
@@ -85,40 +83,88 @@ If you used another installer and `nix run` complains about flakes, add this to 
 experimental-features = nix-command flakes
 ```
 
-**3. Bootstrap your config**
+### 2. Bootstrap your config
 
-Pick a directory you want to keep your config in (for example `~/cabanashmul`), `cd` into it, then:
+From any directory (your home folder is fine), run:
 
 ```bash
 nix run github:shmul95/cabanashmul#setup
+cd cabanashmul
 ```
 
-This creates `profiles/personal.nix` and `local.nix` in the current directory. Open `profiles/personal.nix` and put your real name and email in the `git.settings.user` block.
+The setup app:
 
-**4. Apply it**
+- Clones the template into `./cabanashmul/` (pass a different name to use a different folder: `nix run ...#setup my-config`).
+- Renames the `origin` remote to `template` so `git fetch template && git merge template/main` keeps you up to date.
+- Creates `profiles/personal.nix` and `local.nix` inside the clone.
+- Optionally offers to create a private GitHub repo and set it as a new `origin` (requires the `gh` CLI; answer `n` if you don't want this).
+
+**Edit `profiles/personal.nix`** with your real name and email in the `git.settings.user` block before continuing.
+
+### 3. Apply your config
 
 ```bash
-nix shell home-manager#home-manager                    # only needed the first time
-home-manager switch --impure --flake .#"$USER"-personal
+nix shell home-manager#home-manager           # adds home-manager to this terminal only
+home-manager switch --impure --flake . -b backup
 ```
 
-That's it — your shell, tmux, editor, and packages are now managed by this flake.
+About those flags:
 
-If you add another profile later (say `work`), apply it with `home-manager switch --impure --flake .#"$USER"-work`.
+- **`--impure`** lets the builder read `$USER` and `$HOME` from your environment. It's required, not a code smell.
+- **`-b backup`** renames any pre-existing dotfile (like an existing `~/.zshrc`) to `<file>.backup` instead of refusing to switch. Only needed on the first run if you already had dotfiles in place.
+- **`--flake .`** picks the home configuration named after your username — by default, your `personal` profile. Switching to another profile uses an explicit name; see [Architecture](#architecture).
 
-**5. Daily loop**
+### 4. Verify
 
-Edit a file, then re-run:
+Open a new terminal. You should see:
+
+- A Typewritten-style single-line zsh prompt.
+- `git config user.email` matching what you put in `profiles/personal.nix`.
+- `tmux` and `nvim` available and configured (run them and check).
+
+If something doesn't match, jump to [Troubleshooting](#troubleshooting).
+
+### 5. Daily loop
+
+Edit any `.nix` file in your config, then re-run:
 
 ```bash
-home-manager switch --impure --flake .#"$USER"-personal
+home-manager switch --impure --flake .
 ```
 
-If you have multiple profiles and want near-instant switches, see [Fast Profile Switching](#fast-profile-switching) below.
+(`-b backup` is no longer needed — your old dotfiles were already moved aside on the first run.) For near-instant switches between multiple profiles, see [Fast Profile Switching](#fast-profile-switching).
 
-To roll back a bad change: `home-manager generations` then `/nix/var/nix/profiles/per-user/$USER/home-manager-<N>-link/activate`.
+To roll back a bad change: `home-manager generations`, then run the `activate` script of the previous one.
 
-If something looks unfamiliar, the [Home Manager manual](https://nix-community.github.io/home-manager/) and [nix.dev](https://nix.dev/) are the canonical references.
+The [Home Manager manual](https://nix-community.github.io/home-manager/) and [nix.dev](https://nix.dev/) are the canonical references when you want to go deeper.
+
+### Troubleshooting
+
+**`Permission denied (publickey)` or `Could not read from remote repository` during `nix run ...#setup`** — the setup script clones over HTTPS by default, so this only happens if `CABANASHMUL_TEMPLATE_URL` is set to an SSH URL in your environment. Either unset it, or run the setup with HTTPS explicitly:
+
+```bash
+CABANASHMUL_TEMPLATE_URL=https://github.com/shmul95/cabanashmul.git nix run github:shmul95/cabanashmul#setup
+```
+
+**`home-manager: command not found`** — `nix shell home-manager#home-manager` only adds it to the current terminal. Re-run that command, or after the first successful `switch` use `home-manager` from your now-managed shell.
+
+**`error: experimental feature 'flakes' is disabled`** — your Nix install doesn't have flakes on. Add `experimental-features = nix-command flakes` to `~/.config/nix/nix.conf` and reopen your terminal.
+
+**`Existing file '...' would be clobbered by switching to ...`** — you already had a dotfile Home Manager wants to manage. Re-run the switch with `-b backup` once; old files get a `.backup` suffix.
+
+**Nothing seems to have changed in my shell** — open a *new* terminal. Your current session's environment was set before the switch ran. If you also want zsh as your login shell, see [Non-NixOS Shell Setup](#non-nixos-shell-setup).
+
+**`profile 'personal' not found`** — `profiles/personal.nix` is missing or empty. Re-run the setup app, or copy `profiles/_example.nix.txt` to `profiles/personal.nix` and edit it.
+
+### Quick Start (for Nix veterans)
+
+```bash
+nix run github:shmul95/cabanashmul#setup
+cd cabanashmul
+$EDITOR profiles/personal.nix                          # set name + email
+nix shell home-manager#home-manager
+home-manager switch --impure --flake . -b backup
+```
 
 ## Fast Profile Switching
 

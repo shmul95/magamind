@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TEMPLATE_URL="${CABANASHMUL_TEMPLATE_URL:-git@github.com:shmul95/cabanashmul.git}"
+TEMPLATE_URL="${CABANASHMUL_TEMPLATE_URL:-https://github.com/shmul95/cabanashmul.git}"
 TARGET_DIR="${1:-cabanashmul}"
 PROFILE_PATH="profiles/personal.nix"
 LOCAL_PATH="local.nix"
