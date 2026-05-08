@@ -109,6 +109,8 @@ Edit `profiles/personal.nix` with your real name and email in the `git.settings.
 
 ### 4. Rebuild or switch
 
+Edit any `.nix` file in your config, then run:
+
 ```bash
 nix shell home-manager#home-manager           # adds home-manager to this terminal only
 home-manager switch --impure --flake . -b backup
@@ -130,10 +132,17 @@ If something doesn't match, jump to [Troubleshooting](#troubleshooting).
 
 ### 5. Update from the template
 
-Edit any `.nix` file in your config, then re-run:
+If there is an update in the template repo and want to be up to date
 
 ```bash
-home-manager switch --impure --flake .
+git fetch template
+git merge template/main
+```
+
+or if your on later version you can
+
+```bash
+update-cabanashmul # optionnaly use flag --switch <profile> to directly switch
 ```
 
 (`-b backup` is no longer needed — your old dotfiles were already moved aside on the first run.) For near-instant switches between multiple profiles, see [Fast Profile Switching](#fast-profile-switching).
@@ -274,15 +283,6 @@ chsh -s "$ZSH_PATH"
 ```
 
 Then log out and log back in.
-
-## Updating From The Template
-
-If your repo was created with the setup app, the public template remote is named `template`.
-
-```bash
-git fetch template
-git merge template/main
-```
 
 ---
 
