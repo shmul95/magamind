@@ -20,6 +20,8 @@
     shmulvim.inputs.nixpkgs.follows = "nixpkgs";
     get-shmul-done.url              = "github:shmul95/get-shmul-done?ref=v1.0.0";
     get-shmul-done.inputs.nixpkgs.follows = "nixpkgs";
+    shmulsidian.url                       = "github:cabanashmul/shmulsidian";
+    shmulsidian.inputs.nixpkgs.follows    = "nixpkgs";
   };
 
   outputs = inputs:
