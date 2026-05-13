@@ -3,7 +3,6 @@ result-*
 /private-inputs.nix
 /local.nix
 /private/*.nix
-!/private/README.md
 /profiles.nix
 /profiles/*.nix
 .planning
