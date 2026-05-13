@@ -2,16 +2,19 @@
 
 This project uses retroactive semantic version tags for major milestones in its history.
 
-## 1.2.0 - 2026-05-12
+## Release 1.2.0 - Shmulsidian vault — 2026-05-13
 
-Third stable release. Integrates the Shmulistan federated agent-memory layer as a first-class Home Manager module.
+Third stable release. Wires the shmulsidian Obsidian vault as a first-class Home Manager module with provider MCP/slash-command integration.
 
-- New `shmulsidian` flake input (`github:shmul95/shmulsidian-template`) wired into the starter.
-- New `public/shmulsidian.nix` module enables `services.shmulsidian` by default: PARA vault skeleton, `publish-identity.toml`, `shmulsidian-mcp` on PATH, and `~/.claude/settings.json` MCP entry with `--vault-root`.
-- New `flake.cabanashmul.overlays` option in `_options.nix` — allows any public module to inject nixpkgs overlays; `_builder.nix` applies them when instantiating pkgs.
-- Session lifecycle hooks (`sessionStart`, `stop`) enabled by default.
+- New `private/shmulsidian.nix` module (example at `private/shmulsidian.nix.example`): clones the vault on first activation, scaffolds PARA folders, sets `PERSONAL_VAULT_PATH`, and wires MCP + slash commands for each enabled provider (claude-code, codex, copilot).
+- Bypasses the broken `shmulsidian-template` `homeManagerModules.default` (its `providerImports = map providerModule cfg.providers` inside `mkMerge` forces `cfg.providers` during `pushDownProperties`, causing infinite recursion). Only the vault-scaffold sub-module is imported; providers are wired inline from the static `providers` extraSpecialArg.
+- New `public/providers.nix` and `flake.cabanashmul.providers` option in `_options.nix` — single source of truth for the AI provider list shared by all modules.
+- `_builder.nix` passes `providers = cab.providers` via `extraSpecialArgs` so home-manager modules receive it without reaching back into the flake-parts fixed point.
+- New `flake.cabanashmul.overlays` option in `_options.nix`; `_builder.nix` applies overlays when instantiating pkgs.
+- `get-shmul-done` bumped to `v1.0.2` (`cabanashmul` org): vault lifecycle (clone, scaffold, captureHook) removed from the module — lifecycle is now owned by the shmulsidian module.
+- `CABANASHMUL_DIR` session variable set in `zshmul.nix` so `build-profiles` resolves correctly from any working directory.
 
-## 1.1.0 - 2026-05-08
+## Release 1.1.0 - Get Shmul Done — 2026-05-08
 
 Second stable release. v1.1 rounds out the starter flake with a clearer onboarding path, release-facing documentation, and the final public release marker for the milestone.
 
