@@ -1,35 +1,48 @@
+# private/shmulsidian.nix — wire your personal shmulsidian vault.
+#
+# Prerequisites in flake.nix:
+#   shmulsidian.url                    = "git+ssh://git@github.com/<YOU>/shmulsidian";
+#   shmulsidian.inputs.nixpkgs.follows = "nixpkgs";
+#
+# Copy this file to private/shmulsidian.nix and replace the two
+# placeholders marked with <…>.
+#
+# Why we don't import inputs.shmulsidian.homeManagerModules.default
+# ──────────────────────────────────────────────────────────────────
+# The template's home-manager.nix computes
+#   providerImports = map providerModule cfg.providers
+# inside `config = mkMerge([...] ++ providerImports)`.
+# pushDownProperties forces the mkMerge contents during option-definition
+# collection, which forces cfg.providers = config.programs.shmulsidian.providers,
+# causing infinite recursion.  The fix: import only the vault-scaffold
+# sub-module and wire providers inline from the static `providers` arg
+# that _builder.nix passes via extraSpecialArgs.
+
 { inputs, ... }: let
   template = inputs.shmulsidian.inputs.shmulsidian-template;
 in {
-  # Bypass inputs.shmulsidian.homeManagerModules.default: the template's
-  # home-manager.nix puts `providerImports = map providerModule cfg.providers`
-  # inside `config = mkMerge([...] ++ providerImports)`. pushDownProperties
-  # forces the mkMerge contents during option-definition collection, which forces
-  # cfg.providers = config.programs.shmulsidian.providers, causing infinite recursion.
-  #
-  # Fix: import only the shmulsidian vault-scaffold module (no cycle) and wire
-  # providers inline using the static `providers` arg from extraSpecialArgs.
   flake.cabanashmul.homeModules.shmulsidian = { providers, config, lib, pkgs, ... }: let
     system    = pkgs.stdenv.hostPlatform.system;
     vaultMcp  = template.packages.${system}.vault-mcp;
+    # <1> Change the vault directory name to match your repo.
     vaultPath = "${config.home.homeDirectory}/shmulsidian";
   in {
     imports = [
-      (import "${inputs.shmulsidian}/home-manager.nix" { shmulsidian = inputs.shmulsidian; })
+      (import "${inputs.shmulsidian}/home-manager.nix" { shmulistan = inputs.shmulsidian; })
     ];
 
-    programs.shmulsidian = {
+    programs.shmulistan = {
       enable    = true;
       vaultPath = vaultPath;
     };
 
-    # Clone the private vault if it isn't already a git repo.
-    # Runs before shmulsidian-scaffold so the directory isn't pre-created empty.
-    home.activation.shmulsidian-clone = lib.hm.dag.entryBefore [ "shmulsidian-scaffold" ] ''
+    # Clone the vault on first activation if it isn't already a git repo.
+    home.activation.shmulsidian-clone = lib.hm.dag.entryBefore [ "shmulistan-scaffold" ] ''
       if [ ! -d "${vaultPath}/.git" ]; then
         $DRY_RUN_CMD rm -rf "${vaultPath}"
+        # <2> Replace with your vault's SSH clone URL.
         GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh" \
-          $DRY_RUN_CMD ${pkgs.git}/bin/git clone "git@github.com:shmul95/shmulsidian.git" "${vaultPath}"
+          $DRY_RUN_CMD ${pkgs.git}/bin/git clone "git@github.com:<YOU>/shmulsidian.git" "${vaultPath}"
       fi
     '';
 
