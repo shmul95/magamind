@@ -20,6 +20,11 @@
     shmulvim.inputs.nixpkgs.follows = "nixpkgs";
     get-shmul-done.url              = "github:cabanashmul/get-shmul-done";
     get-shmul-done.inputs.nixpkgs.follows = "nixpkgs";
+    # Points at the vault repo (github:shmul95/shmulistan), which re-exports
+    # lib.mkOverlay and homeManagerModules from shmulistan-template.
+    # New operators: fork the template, add YOUR vault as shmulistan input.
+    shmulistan.url                  = "github:shmul95/shmulistan";
+    shmulistan.inputs.nixpkgs.follows = "nixpkgs";
 
     # NOTE: cabanashmul/shelp repo must be created and pushed to GitHub
     # before `nix flake update` and `nix flake check` will pass here.
