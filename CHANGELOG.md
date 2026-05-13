@@ -6,8 +6,8 @@ This project uses retroactive semantic version tags for major milestones in its 
 
 Third stable release. Integrates the Shmulistan federated agent-memory layer as a first-class Home Manager module.
 
-- New `shmulistan` flake input (`github:shmul95/shmulistan-template`) wired into the starter.
-- New `public/shmulistan.nix` module enables `services.shmulistan` by default: PARA vault skeleton, `publish-identity.toml`, `shmulistan-mcp` on PATH, and `~/.claude/settings.json` MCP entry with `--vault-root`.
+- New `shmulsidian` flake input (`github:shmul95/shmulsidian-template`) wired into the starter.
+- New `public/shmulsidian.nix` module enables `services.shmulsidian` by default: PARA vault skeleton, `publish-identity.toml`, `shmulsidian-mcp` on PATH, and `~/.claude/settings.json` MCP entry with `--vault-root`.
 - New `flake.cabanashmul.overlays` option in `_options.nix` — allows any public module to inject nixpkgs overlays; `_builder.nix` applies them when instantiating pkgs.
 - Session lifecycle hooks (`sessionStart`, `stop`) enabled by default.
 

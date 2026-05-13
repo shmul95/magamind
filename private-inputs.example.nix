@@ -12,8 +12,8 @@
 #     url = "git+ssh://git@github.com/shmul95/shmulcode";
 #     inputs.nixpkgs.follows = "nixpkgs";
 #   };
-#   shmulistan = {
-#     url = "git+ssh://git@github.com/shmul95/shmulistan";
+#   shmulsidian = {
+#     url = "git+ssh://git@github.com/shmul95/shmulsidian";
 #     inputs.nixpkgs.follows = "nixpkgs";
 #   };
 #   shmulex = {

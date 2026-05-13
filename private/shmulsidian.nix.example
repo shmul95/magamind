@@ -1,0 +1,78 @@
+{ inputs, ... }: let
+  template = inputs.shmulsidian.inputs.shmulsidian-template;
+in {
+  # Bypass inputs.shmulsidian.homeManagerModules.default: the template's
+  # home-manager.nix puts `providerImports = map providerModule cfg.providers`
+  # inside `config = mkMerge([...] ++ providerImports)`. pushDownProperties
+  # forces the mkMerge contents during option-definition collection, which forces
+  # cfg.providers = config.programs.shmulsidian.providers, causing infinite recursion.
+  #
+  # Fix: import only the shmulsidian vault-scaffold module (no cycle) and wire
+  # providers inline using the static `providers` arg from extraSpecialArgs.
+  flake.cabanashmul.homeModules.shmulsidian = { providers, config, lib, pkgs, ... }: let
+    system    = pkgs.stdenv.hostPlatform.system;
+    vaultMcp  = template.packages.${system}.vault-mcp;
+    vaultPath = "${config.home.homeDirectory}/shmulsidian";
+  in {
+    imports = [
+      (import "${inputs.shmulsidian}/home-manager.nix" { shmulsidian = inputs.shmulsidian; })
+    ];
+
+    programs.shmulsidian = {
+      enable    = true;
+      vaultPath = vaultPath;
+    };
+
+    # Clone the private vault if it isn't already a git repo.
+    # Runs before shmulsidian-scaffold so the directory isn't pre-created empty.
+    home.activation.shmulsidian-clone = lib.hm.dag.entryBefore [ "shmulsidian-scaffold" ] ''
+      if [ ! -d "${vaultPath}/.git" ]; then
+        $DRY_RUN_CMD rm -rf "${vaultPath}"
+        GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh" \
+          $DRY_RUN_CMD ${pkgs.git}/bin/git clone "git@github.com:shmul95/shmulsidian.git" "${vaultPath}"
+      fi
+    '';
+
+    home.packages = [
+      template.packages.${system}.default
+      vaultMcp
+    ];
+
+    home.sessionVariables.PERSONAL_VAULT_PATH = vaultPath;
+
+    home.file = lib.mkMerge (
+      lib.optional (lib.elem "claude-code" providers) {
+        ".claude/mcp-servers/shmulsidian.json".text = builtins.toJSON {
+          name    = "shmulsidian";
+          command = "${vaultMcp}/bin/shmulsidian-mcp";
+          args    = [];
+          env.PERSONAL_VAULT_PATH = vaultPath;
+        };
+        ".claude/commands".source = "${template}/.claude/commands";
+      }
+      ++ lib.optional (lib.elem "codex" providers) {
+        ".codex/mcp.shmulsidian.toml".text = ''
+          [mcp_servers.shmulsidian]
+          command = "${vaultMcp}/bin/shmulsidian-mcp"
+          args = []
+
+          [mcp_servers.shmulsidian.env]
+          PERSONAL_VAULT_PATH = "${vaultPath}"
+        '';
+        ".codex/prompts".source = "${template}/.claude/commands";
+      }
+    );
+
+    xdg.configFile = lib.mkIf (lib.elem "copilot" providers) {
+      "shmulsidian/providers/copilot.json".text = builtins.toJSON {
+        "github.copilot.chat.mcp.servers" = {
+          shmulsidian = {
+            command = "${vaultMcp}/bin/shmulsidian-mcp";
+            env.PERSONAL_VAULT_PATH = vaultPath;
+          };
+        };
+      };
+      "shmulsidian/providers/copilot-prompts".source = "${template}/.claude/commands";
+    };
+  };
+}
